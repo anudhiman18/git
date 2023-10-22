@@ -1,5 +1,5 @@
 module "ec2" {
-  source = "../Ec2"
+  source = "../ec2"
   for_each = var.loop_ec2
   ami           = each.value.ami
   instance_type = each.value.instance_type
@@ -13,7 +13,7 @@ module "ec2" {
 
 
 module "s3" {
-    source = "../S3"
+    source = "../s3"
     bucket_name = var.bucket_name
     environment = var.environment
 }
