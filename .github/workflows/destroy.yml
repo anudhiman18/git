@@ -1,46 +1,36 @@
-name: TerraformWorkflow
+name: TerraformDestroy
 
 on:
   workflow_dispatch:
-     inputs : 
-      region :
-        description: "Enter your region : "
-        required: true  
-        type: string    
-
 env:
   BUCKET: anu-batch9
   TFSTATE_FILE: S3.tfstate
-  aws_region: ${{ github.event.inputs.region }}
+  aws_region: ap-south-1
 
 jobs:
-  s3bucket :
-      runs-on : ubuntu-latest
+    destroy_bucket:
+      name: destroy
+      runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v3
-        - name: Terraform hashicorp setup
-          uses: hashicorp/setup-terraform@v2
+        - name: CheckOut
+          uses: actions/checkout@v3
+        - name: set up terraform hasicrop
+          uses: hashicorp/setup-terraform@v1
 
-        - name: Configure AWS Credentials
+        - name: configure aws credentials
           uses: aws-actions/configure-aws-credentials@v1
           with:
             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-            aws-region: ${{ env.aws_region }}
-
+            aws-region: ${{env.aws_region}}
+  
         - name: terraform init
           run: |
             cd modulefile
             terraform init -reconfigure -backend-config="bucket=${{ env.BUCKET }}" -backend-config="key=${{ env.TFSTATE_FILE }}" -backend-config="region=${{ env.aws_region }}"
-
-        - name: terraform plan
+            
+        - name: destroy
           run: |
             cd modulefile
-            terraform plan
-
-        - name: terraform apply
-          run: |
-            cd modulefile 
-            terraform apply -auto-approve
-
+            terraform destroy -auto-approve
